@@ -571,20 +571,21 @@
             let unidadesContado = 0;
             let unidadesCredito = 0;
             let totalDineroContadoHoy = 0;
-            let ventasContadoAcumuladas = 0;
+            let ingresosEfectivoCaja = 0; // CORREGIDO: Solo dinero real de contado y abonos
             let hoyStr = new Date().toLocaleDateString();
 
             ventas.forEach(v => {
                 if(v.tipo === 'Contado') {
                     totalUnidades += v.cantidad;
                     unidadesContado += v.cantidad;
-                    ventasContadoAcumuladas += v.total;
+                    ingresosEfectivoCaja += v.total; // Entra dinero a caja por venta al contado
                     if(v.fecha.includes(hoyStr)) totalDineroContadoHoy += v.total;
                 } else if(v.tipo === 'Credito') {
                     totalUnidades += v.cantidad;
                     unidadesCredito += v.cantidad;
+                    // Los créditos NO suman a la caja porque no es dinero recibido
                 } else if(v.tipo === 'Cancelado' || v.tipo === 'Abono') {
-                    ventasContadoAcumuladas += v.total; // Se suma al total de ingresos en caja
+                    ingresosEfectivoCaja += v.total; // Entra dinero real a caja por el abono/pago
                     if(v.fecha.includes(hoyStr) && v.tipo === 'Cancelado') totalDineroContadoHoy += v.total;
                 }
 
@@ -606,7 +607,8 @@
                 `;
             });
 
-            let ingresosGenerales = ventasContadoAcumuladas + totalAbonosHistorico;
+            // Los ingresos totales de caja ahora suman estrictamente las ventas al contado + los abonos registrados en el histórico
+            let ingresosGenerales = ingresosEfectivoCaja;
             document.getElementById('totalUnidadesVendidas').innerText = totalUnidades;
             document.getElementById('totalGaseosasContado').innerText = unidadesContado;
             document.getElementById('totalGaseosasCredito').innerText = unidadesCredito;

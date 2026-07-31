@@ -52,7 +52,7 @@
             </div>
         </header>
 
-        <!-- Panel de Estadísticas / Resumen Actualizado -->
+        <!-- Panel de Estadísticas / Resumen -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-4 mb-6">
             <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-500">
                 <p class="text-gray-500 text-xs font-semibold">Stock Total</p>
@@ -184,7 +184,7 @@
                             <th class="p-3">Gaseosa</th>
                             <th class="p-3">Cant.</th>
                             <th class="p-3">Total (C$)</th>
-                            <th class="p-3">Tipo</th>
+                            <th class="p-3">Tipo / Estado</th>
                             <th class="p-3">Observaciones / Cliente</th>
                         </tr>
                     </thead>
@@ -461,11 +461,11 @@
 
             ventas.unshift({
                 fecha: new Date().toLocaleString(),
-                gaseosa: "---",
+                gaseosa: `Pago / Abono de ${nombreCliente}`,
                 cantidad: 0,
                 total: montoAbono,
-                tipo: "Abono",
-                observaciones: `Pago/Abono de: ${nombreCliente} (${esPagoTotal ? 'Saldó cuenta' : 'Abono parcial'})`
+                tipo: esPagoTotal ? "Cancelado" : "Abono",
+                observaciones: `${esPagoTotal ? 'Canceló y saldó la cuenta completa' : 'Abono parcial a la deuda'} (${nombreCliente})`
             });
 
             guardarEnFirestore();
@@ -583,11 +583,15 @@
                 } else if(v.tipo === 'Credito') {
                     totalUnidades += v.cantidad;
                     unidadesCredito += v.cantidad;
+                } else if(v.tipo === 'Cancelado' || v.tipo === 'Abono') {
+                    ventasContadoAcumuladas += v.total; // Se suma al total de ingresos en caja
+                    if(v.fecha.includes(hoyStr) && v.tipo === 'Cancelado') totalDineroContadoHoy += v.total;
                 }
 
                 let badgeTipo = '';
                 if(v.tipo === 'Contado') badgeTipo = '<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded text-xs font-bold">Contado</span>';
                 else if(v.tipo === 'Credito') badgeTipo = '<span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-bold">Crédito</span>';
+                else if(v.tipo === 'Cancelado') badgeTipo = '<span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-bold">Cancelado</span>';
                 else badgeTipo = '<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold">Abono</span>';
 
                 tablaVen.innerHTML += `

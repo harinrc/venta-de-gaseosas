@@ -10,12 +10,12 @@
 </head>
 <body class="bg-slate-100 font-sans leading-normal tracking-normal">
 
-    <!-- Pantalla de Autenticación (Login / Registro) -->
+    <!-- Pantalla de Autenticación (Solo Login) -->
     <div id="authScreen" class="min-h-screen flex items-center justify-center p-4 bg-slate-900 absolute inset-0 z-50">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-bold text-gray-800">Control de Gaseosas 🥤</h1>
-                <p id="authSubtitle" class="text-gray-500 text-sm mt-1">Inicia sesión para acceder a tus datos</p>
+                <p id="authSubtitle" class="text-gray-500 text-sm mt-1">Inicia sesión con tu cuenta autorizada</p>
             </div>
 
             <form id="authForm" onsubmit="manejarAutenticacion(event)" class="space-y-4">
@@ -29,10 +29,6 @@
                 </div>
                 <button type="submit" id="authBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-3 rounded-lg transition shadow-lg">Iniciar Sesión</button>
             </form>
-
-            <div class="text-center mt-6">
-                <button onclick="cambiarModoAuth()" id="authSwitchBtn" class="text-indigo-600 hover:underline text-sm font-semibold">¿No tienes cuenta? Regístrate aquí</button>
-            </div>
         </div>
     </div>
 
@@ -197,7 +193,6 @@
         import { 
             getAuth, 
             signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword, 
             signOut, 
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -209,7 +204,7 @@
             onSnapshot 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // CONFIGURACIÓN DE FIREBASE (Tus credenciales reales)
+        // CONFIGURACIÓN DE FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyA4IRznoPg7u0wYCv6M-2yFXIMX7G2qcms",
             authDomain: "ventas-de-gaseosas.firebaseapp.com",
@@ -223,9 +218,8 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let esRegistro = false;
         let usuarioActual = null;
-        let unsubscribeDatos = null; // Para detener la escucha en tiempo real al cerrar sesión
+        let unsubscribeDatos = null;
 
         // Variables locales de la app
         let inventario = [];
@@ -234,37 +228,16 @@
         let totalAbonosHistorico = 0;
         let precioUnitarioGlobal = 50;
 
-        // Control de Pantalla Auth / App
-        window.cambiarModoAuth = function() {
-            esRegistro = !esRegistro;
-            const title = document.getElementById('authSubtitle');
-            const btn = document.getElementById('authBtn');
-            const switchBtn = document.getElementById('authSwitchBtn');
-            if(esRegistro) {
-                title.innerText = "Crea una cuenta nueva";
-                btn.innerText = "Registrarse";
-                switchBtn.innerText = "¿Ya tienes cuenta? Inicia sesión";
-            } else {
-                title.innerText = "Inicia sesión para acceder a tus datos";
-                btn.innerText = "Iniciar Sesión";
-                switchBtn.innerText = "¿No tienes cuenta? Regístrate aquí";
-            }
-        }
-
+        // Autenticación (Solo Inicio de Sesión)
         window.manejarAutenticacion = async function(e) {
             e.preventDefault();
             let email = document.getElementById('authEmail').value;
             let pass = document.getElementById('authPassword').value;
 
             try {
-                if(esRegistro) {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                    alert("¡Cuenta creada con éxito!");
-                } else {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                }
+                await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                alert("Error de autenticación: " + error.message);
+                alert("Error al iniciar sesión: Verifique su correo o contraseña.");
             }
         }
 
@@ -280,11 +253,10 @@
                 document.getElementById('appContainer').classList.remove('hidden');
                 document.getElementById('userEmailDisplay').innerText = `Usuario: ${user.email}`;
                 
-                // Cargar datos en tiempo real desde Firestore exclusivo para este UID
                 cargarDatosFirestore(user.uid);
             } else {
                 usuarioActual = null;
-                if(unsubscribeDatos) unsubscribeDatos(); // Apagar listener anterior
+                if(unsubscribeDatos) unsubscribeDatos();
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('appContainer').classList.add('hidden');
             }
@@ -303,7 +275,6 @@
                     totalAbonosHistorico = data.totalAbonosHistorico || 0;
                     precioUnitarioGlobal = data.precioUnitarioGlobal || 50;
                 } else {
-                    // Si es nuevo usuario, inicializar documento vacío en Firestore
                     inventario = [];
                     ventas = [];
                     creditos = {};

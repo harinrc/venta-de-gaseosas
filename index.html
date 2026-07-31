@@ -395,7 +395,7 @@
             if(tipoPago === 'Credito') {
                 if(!nombreCliente) {
                     alert("Por favor ingrese el nombre del deudor para el crédito.");
-                    gaseosa.stock += cantidad; // Devolver stock temporalmente si falla
+                    gaseosa.stock += cantidad; 
                     return;
                 }
                 observaciones = `Fiado a: ${nombreCliente}. ${observaciones}`;
@@ -573,13 +573,12 @@
                     totalUnidades += v.cantidad;
                     unidadesContado += v.cantidad;
                     ingresosEfectivoCaja += v.total; 
-                    if(v.fecha.includes(hoyStr)) totalDineroContadoHoy += v.total;
+                    if(v.fecha.includes(hoyStr)) totalDineroContadoHoy += v.total; // CORREGIDO: Solo suma las ventas puras de contado de hoy
                 } else if(v.tipo === 'Credito') {
                     totalUnidades += v.cantidad;
                     unidadesCredito += v.cantidad;
                 } else if(v.tipo === 'Cancelado' || v.tipo === 'Abono') {
-                    ingresosEfectivoCaja += v.total; 
-                    if(v.fecha.includes(hoyStr) && v.tipo === 'Cancelado') totalDineroContadoHoy += v.total;
+                    ingresosEfectivoCaja += v.total; // Entra a caja, pero no altera las "Ventas de Contado Hoy"
                 }
 
                 let badgeTipo = '';

@@ -459,7 +459,9 @@
         window.abonarCredito = function(nombreCliente) {
             let cliente = creditos[nombreCliente];
             let unidadesActuales = cliente.unidades;
-            let montoAbono = prompt(`Cliente: ${nombreCliente}\nUnidades fiadas pendientes: ${unidadesActuales}\nDeuda actual: C$ ${cliente.deuda}\n\n¿Cuánto va a abonar/pagar en C$?`, cliente.deuda);
+            let deudaActual = cliente.deuda;
+            
+            let montoAbono = prompt(`Cliente: ${nombreCliente}\nUnidades totales asociadas: ${unidadesActuales}\nDeuda total actual: C$ ${deudaActual}\n\n¿Cuánto va a abonar/pagar en C$?`, deudaActual);
             
             if(montoAbono === null) return;
             montoAbono = parseFloat(montoAbono);
@@ -470,7 +472,7 @@
             }
 
             totalAbonosHistorico += montoAbono;
-            let esPagoTotal = montoAbono >= cliente.deuda;
+            let esPagoTotal = montoAbono >= deudaActual;
             let unidadesPagadasEnEstaAccion = 0;
 
             if(esPagoTotal) {
@@ -478,14 +480,13 @@
                 delete creditos[nombreCliente];
                 alert(`¡Crédito de ${nombreCliente} saldado por completo! (${unidadesPagadasEnEstaAccion} unidades pagadas)`);
             } else {
-                // Si es abono parcial, estimamos proporcionalmente las unidades según la deuda actual
-                if (cliente.deuda > 0) {
-                    let proporcion = montoAbono / cliente.deuda;
-                    unidadesPagadasEnEstaAccion = Math.round(cliente.unidades * proporcion);
-                    cliente.unidades = Math.max(0, cliente.unidades - unidadesPagadasEnEstaAccion);
-                }
+                let proporcion = montoAbono / deudaActual;
+                unidadesPagadasEnEstaAccion = Math.round(cliente.unidades * proporcion);
+                
+                cliente.unidades = Math.max(0, cliente.unidades - unidadesPagadasEnEstaAccion);
                 cliente.deuda -= montoAbono;
-                alert(`Abono registrado. Nueva deuda: C$ ${cliente.deuda.toFixed(2)}`);
+                
+                alert(`Abono registrado. Nueva deuda: C$ ${cliente.deuda.toFixed(2)} (Se saldaron ${unidadesPagadasEnEstaAccion} unidades proporcionales)`);
             }
 
             ventas.unshift({
@@ -494,7 +495,7 @@
                 cantidad: unidadesPagadasEnEstaAccion,
                 total: montoAbono,
                 tipo: esPagoTotal ? "Cancelado" : "Abono",
-                observaciones: `${esPagoTotal ? 'Canceló y saldó la cuenta completa' : 'Abono parcial a la deuda'} (${nombreCliente})`
+                observaciones: `${esPagoTotal ? 'Canceló y saldó la cuenta completa' : 'Abono parcial proporcional'} (${nombreCliente})`
             });
 
             guardarEnFirestore();
@@ -514,18 +515,21 @@
                 return;
             }
 
+            let unidadesEquivalentes = Math.round(montoDeuda / precioUnitarioGlobal);
+
             if(!creditos[nombreCliente]) {
                 creditos[nombreCliente] = { unidades: 0, deuda: 0, items: {} };
             }
             creditos[nombreCliente].deuda += montoDeuda;
+            creditos[nombreCliente].unidades += unidadesEquivalentes;
 
             ventas.unshift({
                 fecha: new Date().toLocaleString(),
                 gaseosa: "Saldo Anterior / Fiado previo",
-                cantidad: 0,
+                cantidad: unidadesEquivalentes,
                 total: montoDeuda,
                 tipo: "Credito",
-                observaciones: `Deuda manual agregada a: ${nombreCliente}`
+                observaciones: `Deuda manual agregada a: ${nombreCliente} (Eq: ${unidadesEquivalentes} unidades)`
             });
 
             guardarEnFirestore();

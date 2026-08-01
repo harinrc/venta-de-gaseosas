@@ -52,8 +52,8 @@
             </div>
         </header>
 
-        <!-- Panel de Estadísticas / Resumen (10 Tarjetas) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3 mb-6">
+        <!-- Panel de Estadísticas / Resumen (13 Tarjetas) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
             <div class="bg-white p-3 rounded-xl shadow border-l-4 border-blue-500 flex flex-col justify-between">
                 <p class="text-gray-500 text-[11px] font-semibold leading-tight">Stock Total</p>
                 <h3 id="totalStock" class="text-lg font-bold text-gray-800 mt-1">0</h3>
@@ -70,9 +70,13 @@
                 <p class="text-gray-500 text-[11px] font-semibold leading-tight">Gaseosas Contado Hoy</p>
                 <h3 id="gaseosasContadoHoy" class="text-lg font-bold text-emerald-700 mt-1">0</h3>
             </div>
-            <div class="bg-white p-3 rounded-xl shadow border-l-4 border-purple-700 flex flex-col justify-between">
+            <div class="bg-white p-3 rounded-xl shadow border-l-4 border-purple-500 flex flex-col justify-between">
                 <p class="text-gray-500 text-[11px] font-semibold leading-tight">Gaseosas Crédito Hoy</p>
-                <h3 id="gaseosasCreditoHoy" class="text-lg font-bold text-purple-700 mt-1">0</h3>
+                <h3 id="gaseosasCreditoHoy" class="text-lg font-bold text-purple-600 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-3 rounded-xl shadow border-l-4 border-purple-700 flex flex-col justify-between">
+                <p class="text-gray-500 text-[11px] font-semibold leading-tight">Crédito Hoy (C$)</p>
+                <h3 id="creditoHoyDinero" class="text-sm font-bold text-purple-700 mt-1">C$ 0.00</h3>
             </div>
             <div class="bg-white p-3 rounded-xl shadow border-l-4 border-indigo-500 flex flex-col justify-between">
                 <p class="text-gray-500 text-[11px] font-semibold leading-tight">Ingresos Totales (Caja)</p>
@@ -86,9 +90,17 @@
                 <p class="text-gray-500 text-[11px] font-semibold leading-tight">Gaseosas al Contado (Gen.)</p>
                 <h3 id="totalGaseosasContado" class="text-lg font-bold text-cyan-600 mt-1">0</h3>
             </div>
-            <div class="bg-white p-3 rounded-xl shadow border-l-4 border-purple-500 flex flex-col justify-between">
+            <div class="bg-white p-3 rounded-xl shadow border-l-4 border-purple-400 flex flex-col justify-between">
                 <p class="text-gray-500 text-[11px] font-semibold leading-tight">Gaseosas al Crédito (Gen.)</p>
                 <h3 id="totalGaseosasCredito" class="text-lg font-bold text-purple-600 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-3 rounded-xl shadow border-l-4 border-teal-500 flex flex-col justify-between">
+                <p class="text-gray-500 text-[11px] font-semibold leading-tight">Gaseosas Crédito Pagadas (Gen.)</p>
+                <h3 id="totalGaseosasCreditoPagadas" class="text-lg font-bold text-teal-600 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-3 rounded-xl shadow border-l-4 border-teal-700 flex flex-col justify-between">
+                <p class="text-gray-500 text-[11px] font-semibold leading-tight">Créditos Pagados (Gen. C$)</p>
+                <h3 id="totalDineroCreditoPagado" class="text-sm font-bold text-teal-700 mt-1">C$ 0.00</h3>
             </div>
             <div class="bg-white p-3 rounded-xl shadow border-l-4 border-red-500 flex flex-col justify-between">
                 <p class="text-gray-500 text-[11px] font-semibold leading-tight">Créditos Activos (Deuda)</p>
@@ -182,22 +194,22 @@
             </div>
         </div>
 
-        <!-- Historial General de Ventas -->
+        <!-- Historial General de Ventas (Con Scroll Interno) -->
         <div class="bg-white p-5 rounded-xl shadow">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
                 <h2 class="text-xl font-bold text-gray-700">📊 Historial General de Transacciones</h2>
                 <button onclick="limpiarHistorial()" class="text-red-500 hover:text-red-700 text-sm font-semibold">Borrar Historial</button>
             </div>
-            <div class="overflow-x-auto">
+            <div class="max-h-[400px] overflow-y-auto border rounded-lg">
                 <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-600 text-sm">
-                            <th class="p-3">Fecha y Hora</th>
-                            <th class="p-3">Gaseosa</th>
-                            <th class="p-3">Cant.</th>
-                            <th class="p-3">Total (C$)</th>
-                            <th class="p-3">Tipo / Estado</th>
-                            <th class="p-3">Observaciones / Cliente</th>
+                    <thead class="bg-gray-100 text-gray-600 text-sm sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="p-3 bg-gray-100">Fecha y Hora</th>
+                            <th class="p-3 bg-gray-100">Gaseosa</th>
+                            <th class="p-3 bg-gray-100">Cant.</th>
+                            <th class="p-3 bg-gray-100">Total (C$)</th>
+                            <th class="p-3 bg-gray-100">Tipo / Estado</th>
+                            <th class="p-3 bg-gray-100">Observaciones / Cliente</th>
                         </tr>
                     </thead>
                     <tbody id="tablaVentas" class="text-sm divide-y divide-gray-200"></tbody>
@@ -282,7 +294,7 @@
             }
         });
 
-        // Sincronización en Tiempo Real con Cloud Firestore
+        // Sincronización en Tiempo Real con Cloud Firestore (Protegida contra borrados)
         function cargarDatosFirestore(uid) {
             let docRef = doc(db, "usuarios", uid);
             
@@ -293,7 +305,7 @@
                     ventas = data.ventas || [];
                     creditos = data.creditos || {};
                     totalAbonosHistorico = data.totalAbonosHistorico || 0;
-                    precioUnitarioGlobal = data.precioUnitarioGlobal || 50;
+                    precioUnitarioGlobal = data.precioUnitarioGlobal !== undefined ? data.precioUnitarioGlobal : 50;
                 } else {
                     inventario = [];
                     ventas = [];
@@ -304,6 +316,8 @@
                 }
                 document.getElementById('precioUnitario').value = precioUnitarioGlobal;
                 actualizarTodo();
+            }, (error) => {
+                console.error("Error al leer de Firestore: ", error);
             });
         }
 
@@ -580,9 +594,12 @@
             let totalUnidades = 0;
             let unidadesContado = 0;
             let unidadesCredito = 0;
+            let unidadesCreditoPagadas = 0;
+            let dineroCreditoPagado = 0;
             let totalDineroContadoHoy = 0;
             let gaseosasContadoHoyVal = 0;
             let gaseosasCreditoHoyVal = 0;
+            let creditoHoyDineroVal = 0;
             let ingresosEfectivoCaja = 0; 
             let hoyStr = new Date().toLocaleDateString();
 
@@ -602,9 +619,17 @@
                     unidadesCredito += v.cantidad;
                     if(esHoy) {
                         gaseosasCreditoHoyVal += v.cantidad;
+                        creditoHoyDineroVal += v.total;
                     }
                 } else if(v.tipo === 'Cancelado' || v.tipo === 'Abono') {
                     ingresosEfectivoCaja += v.total;
+                    dineroCreditoPagado += v.total;
+                    // Para estimar el conteo de gaseosas pagadas si se conoce el precio base o por promedio
+                    let precioEstimado = precioUnitarioGlobal; 
+                    if(v.total > 0 && precioEstimado > 0) {
+                        let cantEstimada = Math.round(v.total / precioEstimado);
+                        unidadesCreditoPagadas += cantEstimada;
+                    }
                 }
 
                 let badgeTipo = '';
@@ -629,9 +654,12 @@
             document.getElementById('totalUnidadesVendidas').innerText = totalUnidades;
             document.getElementById('totalGaseosasContado').innerText = unidadesContado;
             document.getElementById('totalGaseosasCredito').innerText = unidadesCredito;
+            document.getElementById('totalGaseosasCreditoPagadas').innerText = unidadesCreditoPagadas;
+            document.getElementById('totalDineroCreditoPagado').innerText = `C$ ${dineroCreditoPagado.toFixed(2)}`;
             document.getElementById('totalVentasHoy').innerText = `C$ ${totalDineroContadoHoy.toFixed(2)}`;
             document.getElementById('gaseosasContadoHoy').innerText = gaseosasContadoHoyVal;
             document.getElementById('gaseosasCreditoHoy').innerText = gaseosasCreditoHoyVal;
+            document.getElementById('creditoHoyDinero').innerText = `C$ ${creditoHoyDineroVal.toFixed(2)}`;
             document.getElementById('totalIngresosGenerales').innerText = `C$ ${ingresosGenerales.toFixed(2)}`;
         }
     </script>

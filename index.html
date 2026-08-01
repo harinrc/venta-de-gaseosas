@@ -194,7 +194,7 @@
             </div>
         </div>
 
-        <!-- Historial General de Ventas (Con Scroll Interno) -->
+        <!-- Historial General de Transacciones (Con Scroll Interno) -->
         <div class="bg-white p-5 rounded-xl shadow">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
                 <h2 class="text-xl font-bold text-gray-700">📊 Historial General de Transacciones</h2>
@@ -424,7 +424,7 @@
                     gaseosa.stock += cantidad; 
                     return;
                 }
-                observaciones = `Fiado a: ${nombreCliente}. ${observaciones}`;
+                observaciones = `Fiado a: ${nombreCliente}. Debe ${cantidad}`;
                 
                 if(!creditos[nombreCliente]) {
                     creditos[nombreCliente] = { unidades: 0, deuda: 0, items: {} };
@@ -438,7 +438,7 @@
                 creditos[nombreCliente].items[gaseosa.nombre] += cantidad;
             } else {
                 if(nombreCliente) {
-                    observaciones = `Comprador: ${nombreCliente}. ${observaciones}`;
+                    observaciones = `Comprador: ${nombreCliente}. Paga ${cantidad}`;
                 }
             }
 
@@ -458,7 +458,8 @@
 
         window.abonarCredito = function(nombreCliente) {
             let cliente = creditos[nombreCliente];
-            let montoAbono = prompt(`Cliente: ${nombreCliente}\nDeuda actual: C$ ${cliente.deuda}\n\n¿Cuánto va a abonar/pagar en C$?`, cliente.deuda);
+            let unidadesActuales = cliente.unidades;
+            let montoAbono = prompt(`Cliente: ${nombreCliente}\nUnidades fiadas pendientes: ${unidadesActuales}\nDeuda actual: C$ ${cliente.deuda}\n\n¿Cuánto va a abonar/pagar en C$?`, cliente.deuda);
             
             if(montoAbono === null) return;
             montoAbono = parseFloat(montoAbono);
@@ -470,11 +471,19 @@
 
             totalAbonosHistorico += montoAbono;
             let esPagoTotal = montoAbono >= cliente.deuda;
+            let unidadesPagadasEnEstaAccion = 0;
 
             if(esPagoTotal) {
+                unidadesPagadasEnEstaAccion = cliente.unidades;
                 delete creditos[nombreCliente];
-                alert(`¡Crédito de ${nombreCliente} saldado por completo!`);
+                alert(`¡Crédito de ${nombreCliente} saldado por completo! (${unidadesPagadasEnEstaAccion} unidades pagadas)`);
             } else {
+                // Si es abono parcial, estimamos proporcionalmente las unidades según la deuda actual
+                if (cliente.deuda > 0) {
+                    let proporcion = montoAbono / cliente.deuda;
+                    unidadesPagadasEnEstaAccion = Math.round(cliente.unidades * proporcion);
+                    cliente.unidades = Math.max(0, cliente.unidades - unidadesPagadasEnEstaAccion);
+                }
                 cliente.deuda -= montoAbono;
                 alert(`Abono registrado. Nueva deuda: C$ ${cliente.deuda.toFixed(2)}`);
             }
@@ -482,7 +491,7 @@
             ventas.unshift({
                 fecha: new Date().toLocaleString(),
                 gaseosa: `Pago / Abono de ${nombreCliente}`,
-                cantidad: 0,
+                cantidad: unidadesPagadasEnEstaAccion,
                 total: montoAbono,
                 tipo: esPagoTotal ? "Cancelado" : "Abono",
                 observaciones: `${esPagoTotal ? 'Canceló y saldó la cuenta completa' : 'Abono parcial a la deuda'} (${nombreCliente})`
@@ -624,12 +633,7 @@
                 } else if(v.tipo === 'Cancelado' || v.tipo === 'Abono') {
                     ingresosEfectivoCaja += v.total;
                     dineroCreditoPagado += v.total;
-                    // Para estimar el conteo de gaseosas pagadas si se conoce el precio base o por promedio
-                    let precioEstimado = precioUnitarioGlobal; 
-                    if(v.total > 0 && precioEstimado > 0) {
-                        let cantEstimada = Math.round(v.total / precioEstimado);
-                        unidadesCreditoPagadas += cantEstimada;
-                    }
+                    unidadesCreditoPagadas += (v.cantidad || 0);
                 }
 
                 let badgeTipo = '';

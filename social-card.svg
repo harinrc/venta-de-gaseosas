@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Gestor de Ventas</title>
+  <desc id="desc">Panel de gestión comercial para inventario, ventas y créditos</desc>
+  <rect width="1200" height="630" fill="#681d2b"/>
+  <circle cx="1010" cy="92" r="230" fill="#a92f3b" opacity=".75"/>
+  <circle cx="1090" cy="540" r="300" fill="#781f2d" opacity=".8"/>
+  <rect x="90" y="92" width="92" height="92" fill="#c97545"/>
+  <text x="136" y="153" fill="#ffffff" font-family="Arial, sans-serif" font-size="30" font-weight="700" text-anchor="middle">GV</text>
+  <text x="90" y="294" fill="#f0b27d" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="5">GESTIÓN COMERCIAL</text>
+  <text x="90" y="390" fill="#ffffff" font-family="Georgia, serif" font-size="76" font-weight="700">Gestor de Ventas</text>
+  <text x="90" y="448" fill="#f8dfe2" font-family="Arial, sans-serif" font-size="28">Inventario · ventas · créditos · reportes</text>
+  <path d="M90 505h370" stroke="#c97545" stroke-width="6"/>
+</svg>

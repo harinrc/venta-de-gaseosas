@@ -1,5 +1,5 @@
-import { auth, onAuthStateChanged, signOut, startDataSync, stopDataSync, subscribe, getState, saveData, isReady } from "./firebase.js";
-export { getState, saveData, subscribe };
+import { auth, onAuthStateChanged, signOut, startDataSync, stopDataSync, subscribe, getState, saveData, getSession, isReady } from "./firebase.js";
+export { getState, saveData, subscribe, getSession };
 export function setupApp(render) {
     onAuthStateChanged(auth, user => {
         if (!user) { stopDataSync(); window.location.href = "./index.html"; return; }
@@ -8,10 +8,11 @@ export function setupApp(render) {
             document.querySelectorAll("[data-user-email]").forEach(element => element.textContent = user.email);
             document.querySelectorAll("[data-logout]").forEach(button => button.addEventListener("click", () => signOut(auth)));
         };
-        startDataSync(user); subscribe(updatePage);
+        startDataSync(user).catch(error => { console.error("No se pudo preparar el perfil:", error); stopDataSync(); window.location.href = "./index.html"; }); subscribe(updatePage);
     });
 }
 export function money(value) { return `C$ ${Number(value || 0).toFixed(2)}`; }
+export function can(action) { const role = getSession()?.role || "consulta"; const permissions = { sell:["propietario","administrador","vendedor","cajero"], manageInventory:["propietario","administrador","inventario"], manageCredits:["propietario","administrador","cajero"], viewFinancials:["propietario","administrador","cajero","consulta"] }; return permissions[action]?.includes(role) || false; }
 export function esc(value) { return String(value ?? "").replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[character])); }
 export function dateKey(date = new Date()) { const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, "0"); const day = String(date.getDate()).padStart(2, "0"); return `${year}-${month}-${day}`; }
 export function monthKey(date = new Date()) { return dateKey(date).slice(0, 7); }
@@ -39,8 +40,10 @@ export function metrics(state) {
     return result;
 }
 export function pageShell(title, subtitle, active, content) {
-    const links = [{ href:"dashboard.html", icon:"▦", text:"Dashboard", key:"dashboard" }, { href:"inventario.html", icon:"□", text:"Inventario", key:"inventario" }, { href:"ventas.html", icon:"＋", text:"Nueva venta", key:"ventas" }, { href:"creditos.html", icon:"◎", text:"Créditos", key:"creditos" }, { href:"reportes.html", icon:"▤", text:"Reportes diarios", key:"reportes" }];
-    document.body.innerHTML = `<div class="app-shell"><aside class="sidebar"><a class="sidebar-brand" href="dashboard.html"><span class="brand-mark">GV</span>Gestor de ventas</a><nav>${links.map(link => `<a class="nav-link ${link.key === active ? "active" : ""}" href="${link.href}"><span>${link.icon}</span>${link.text}</a>`).join("")}</nav><div class="sidebar-footer"><span data-user-email></span><br><button class="button button-quiet button-small" data-logout>Cerrar sesión</button></div></aside><main class="main-content"><header class="topbar"><div><p class="eyebrow">Panel de control</p><h1>${title}</h1><p>${subtitle}</p></div><div class="topbar-actions"><span class="user-pill" data-user-email></span></div></header>${content}</main></div>`;
+    const session = getSession() || { role:"vendedor", email:"" };
+    const links = [{ href:"dashboard.html", icon:"▦", text:"Dashboard", key:"dashboard", roles:["propietario","administrador","vendedor","cajero","inventario","consulta"] }, { href:"inventario.html", icon:"□", text:"Inventario", key:"inventario", roles:["propietario","administrador","inventario","consulta"] }, { href:"ventas.html", icon:"＋", text:"Nueva venta", key:"ventas", roles:["propietario","administrador","vendedor","cajero"] }, { href:"creditos.html", icon:"◎", text:"Créditos", key:"creditos", roles:["propietario","administrador","cajero"] }, { href:"reportes.html", icon:"▤", text:"Reportes diarios", key:"reportes", roles:["propietario","administrador","cajero","consulta"] }].filter(link => link.roles.includes(session.role));
+    const roleLabels = { propietario:"Propietario", administrador:"Administrador", vendedor:"Vendedor", cajero:"Cajero", inventario:"Inventario", consulta:"Consulta" };
+    document.body.innerHTML = `<div class="app-shell"><aside class="sidebar"><a class="sidebar-brand" href="dashboard.html"><span class="brand-mark">GV</span>Gestor de ventas</a><nav>${links.map(link => `<a class="nav-link ${link.key === active ? "active" : ""}" href="${link.href}"><span>${link.icon}</span>${link.text}</a>`).join("")}</nav><div class="sidebar-footer"><span data-user-email></span><strong class="role-label">${roleLabels[session.role] || "Usuario"}</strong><br><button class="button button-quiet button-small" data-logout>Cerrar sesión</button></div></aside><main class="main-content"><header class="topbar"><div><p class="eyebrow">Panel de control</p><h1>${title}</h1><p>${subtitle}</p></div><div class="topbar-actions"><span class="user-pill" data-user-email></span></div></header>${content}</main></div>`;
 }
 export function card(label, value, note, tone="") { return `<article class="metric-card ${tone}"><p class="metric-label">${label}</p><p class="metric-value">${value}</p><p class="metric-note">${note}</p></article>`; }
 export function badge(type) { const map = { Contado:["cash","Contado"], Credito:["credit","Crédito"], Abono:["paid","Abono"], Cancelado:["paid","Cancelado"] }; const item = map[type] || ["paid", type]; return `<span class="badge ${item[0]}">${item[1]}</span>`; }

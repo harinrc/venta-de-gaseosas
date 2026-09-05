@@ -38,6 +38,7 @@ input:focus, select:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(
 .nav-link { display:flex; gap:11px; align-items:center; padding:12px; color:#d6e7e5; text-decoration:none; font:13px Arial,sans-serif; }
 .nav-link:hover, .nav-link.active { color:#fff; background:#812b39; }
 .sidebar-footer { margin-top:55px; padding:14px 12px; border-top:1px solid #32615e; color:#a9c1bf; font:11px/1.5 Arial,sans-serif; overflow-wrap:anywhere; }
+.role-label { display:block; margin:6px 0 12px; color:#f0b27d; font:700 10px 'DM Sans',sans-serif; text-transform:uppercase; letter-spacing:1px; }
 .main-content { min-width:0; padding:34px clamp(20px,4vw,58px); }
 .topbar { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; margin-bottom:31px; }
 .topbar h1 { margin:5px 0 7px; font-size:39px; line-height:1; }

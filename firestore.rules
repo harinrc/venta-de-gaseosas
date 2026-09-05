@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownProfile(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/perfiles/$(request.auth.uid)).data;
+    }
+
+    function roleIs(role) {
+      return signedIn() && profile().rol == role;
+    }
+
+    function isAdminOf(businessId) {
+      return signedIn()
+        && profile().negocioId == businessId
+        && profile().rol in ['propietario', 'administrador'];
+    }
+
+    function isMemberOf(businessId) {
+      return signedIn() && profile().negocioId == businessId;
+    }
+
+    match /usuarios/{uid} {
+      allow read, write: if ownProfile(uid);
+    }
+
+    match /perfiles/{uid} {
+      allow read: if ownProfile(uid) || (signedIn() && profile().negocioId == resource.data.negocioId && profile().rol in ['propietario', 'administrador']);
+      allow create: if ownProfile(uid)
+        && (request.resource.data.rol == 'propietario'
+          || get(/databases/$(database)/documents/invitaciones/$(request.auth.token.email)).data.negocioId == request.resource.data.negocioId);
+      allow update: if ownProfile(uid) || (signedIn() && profile().negocioId == resource.data.negocioId && profile().rol == 'propietario');
+      allow delete: if signedIn() && profile().rol == 'propietario';
+    }
+
+    match /invitaciones/{email} {
+      allow read: if signedIn() && request.auth.token.email == email;
+      allow create, update: if isAdminOf(request.resource.data.negocioId);
+      allow delete: if isAdminOf(resource.data.negocioId);
+    }
+
+    match /negocios/{businessId} {
+      allow read: if isMemberOf(businessId);
+      allow create: if signedIn()
+        && request.resource.data.miembros[0].uid == request.auth.uid;
+      allow update: if isAdminOf(businessId)
+        || (isMemberOf(businessId) && profile().rol in ['vendedor', 'cajero', 'inventario']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inventario', 'ventas', 'creditos', 'inventarioHistorial', 'totalAbonosHistorico']));
+      allow delete: if roleIs('propietario') && profile().negocioId == businessId;
+    }
+  }
+}

@@ -24,6 +24,8 @@ label { display:grid; gap:7px; color:#52606d; font:700 12px Arial,sans-serif; }
 input, select { width:100%; padding:13px 14px; border:1px solid #d5dde0; background:#fff; color:var(--ink); outline:none; }
 input:focus, select:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(169,47,59,.12); }
 .button { border:0; padding:12px 17px; font:700 12px Arial,sans-serif; letter-spacing:.2px; }
+.hidden { display:none !important; }
+.text-button { margin-top:16px; padding:0; border:0; color:var(--teal); background:transparent; font:700 12px 'DM Sans',sans-serif; text-decoration:underline; }
 .button-primary { color:#fff; background:var(--teal); }
 .button-primary:hover { background:var(--teal-dark); }
 .button-quiet { color:var(--teal-dark); background:var(--red-soft); }

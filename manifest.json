@@ -1,10 +1,10 @@
 {
-  "name": "Control de Gaseosas",
-  "short_name": "GaseosasApp",
+  "name": "Gestor de Ventas",
+  "short_name": "GestorVentas",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
-  "theme_color": "#4f46e5",
+  "theme_color": "#0f766e",
   "icons": [
     {
       "src": "icon-192.png",

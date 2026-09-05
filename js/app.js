@@ -16,12 +16,12 @@ export function can(action) { const role = getSession()?.role || "consulta"; con
 export function esc(value) { return String(value ?? "").replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[character])); }
 export function dateKey(date = new Date()) { const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, "0"); const day = String(date.getDate()).padStart(2, "0"); return `${year}-${month}-${day}`; }
 export function monthKey(date = new Date()) { return dateKey(date).slice(0, 7); }
-export function recordDate(value, isoValue) { const parsed = new Date(isoValue || value); return Number.isNaN(parsed.getTime()) ? null : dateKey(parsed); }
+export function recordDate(value, isoValue) { if (isoValue) { const parsed = new Date(isoValue); return Number.isNaN(parsed.getTime()) ? null : dateKey(parsed); } const text = String(value || ""); const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (match) return `${match[3]}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`; const parsed = new Date(text); return Number.isNaN(parsed.getTime()) ? null : dateKey(parsed); }
 export function isToday(dateText) { return recordDate(dateText) === dateKey(); }
 export function salesForDate(sales, selectedDate) { return sales.filter(sale => recordDate(sale.fecha, sale.fechaISO) === selectedDate); }
 export function chartData(state, selectedDate = dateKey()) {
     const daily = {}; const monthly = {};
-    state.ventas.forEach(sale => { const parsed = new Date(sale.fechaISO || sale.fecha); if (Number.isNaN(parsed.getTime())) return; const day = dateKey(parsed); const month = monthKey(parsed); const bucket = { sales:0, credit:0, payments:0, units:0 }; daily[day] ??= { ...bucket }; monthly[month] ??= { ...bucket }; const amount = Number(sale.total || 0); const units = Number(sale.cantidad || 0); [daily[day], monthly[month]].forEach(item => { if (sale.tipo === "Contado") item.sales += amount; if (sale.tipo === "Credito") item.credit += amount; if (["Abono", "Cancelado"].includes(sale.tipo)) item.payments += amount; item.units += units; }); });
+    state.ventas.forEach(sale => { const day = recordDate(sale.fecha, sale.fechaISO); if (!day) return; const month = day.slice(0, 7); const bucket = { sales:0, credit:0, payments:0, units:0 }; daily[day] ??= { ...bucket }; monthly[month] ??= { ...bucket }; const amount = Number(sale.total || 0); const units = Number(sale.cantidad || 0); [daily[day], monthly[month]].forEach(item => { if (sale.tipo === "Contado") item.sales += amount; if (sale.tipo === "Credito") item.credit += amount; if (["Abono", "Cancelado"].includes(sale.tipo)) item.payments += amount; item.units += units; }); });
     const inventory = (state.inventarioHistorial || []).filter(item => item.fecha?.startsWith(selectedDate)).reduce((sum, item) => sum + Number(item.cantidad || 0), 0);
     return { daily, monthly, inventory };
 }
@@ -31,7 +31,7 @@ export function metrics(state) {
     const result = { stock, stockValue, cashToday:0, creditToday:0, unitsCashToday:0, unitsCreditToday:0, totalUnits:0, totalCashUnits:0, totalCreditUnits:0, paidUnits:0, paidMoney:0, cashTotal:0, debt:0, transactionsToday:0 };
     Object.values(state.creditos).forEach(credit => { result.debt += Number(credit.deuda || 0); });
     state.ventas.forEach(sale => {
-        const quantity = Number(sale.cantidad || 0); const total = Number(sale.total || 0); const today = isToday(sale.fecha);
+        const quantity = Number(sale.cantidad || 0); const total = Number(sale.total || 0); const today = recordDate(sale.fecha, sale.fechaISO) === dateKey();
         if (sale.tipo === "Contado") { result.totalUnits += quantity; result.totalCashUnits += quantity; result.cashTotal += total; if (today) { result.cashToday += total; result.unitsCashToday += quantity; } }
         if (sale.tipo === "Credito") { result.totalUnits += quantity; result.totalCreditUnits += quantity; if (today) { result.creditToday += total; result.unitsCreditToday += quantity; } }
         if (["Abono", "Cancelado"].includes(sale.tipo)) { result.cashTotal += total; result.paidMoney += total; result.paidUnits += quantity; }

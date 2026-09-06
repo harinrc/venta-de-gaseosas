@@ -22,9 +22,13 @@ export function salesForDate(sales, selectedDate) { return sales.filter(sale => 
 export function chartData(state, selectedDate = dateKey()) {
     const daily = {}; const monthly = {};
     state.ventas.forEach(sale => { const day = recordDate(sale.fecha, sale.fechaISO); if (!day) return; const month = day.slice(0, 7); const bucket = { sales:0, credit:0, payments:0, units:0 }; daily[day] ??= { ...bucket }; monthly[month] ??= { ...bucket }; const amount = Number(sale.total || 0); const units = Number(sale.cantidad || 0); [daily[day], monthly[month]].forEach(item => { if (sale.tipo === "Contado") item.sales += amount; if (sale.tipo === "Credito") item.credit += amount; if (["Abono", "Cancelado"].includes(sale.tipo)) item.payments += amount; item.units += units; }); });
-    const inventoryMoved = (state.inventarioHistorial || []).filter(item => item.fecha?.startsWith(selectedDate)).reduce((sum, item) => sum + Number(item.cantidad || 0), 0);
+    const inventoryEntries = (state.inventarioHistorial || []).filter(item => item.fecha?.startsWith(selectedDate) && item.tipo === "entrada").reduce((sum, item) => sum + Number(item.cantidad || 0), 0);
+    const inventorySales = salesForDate(state.ventas, selectedDate);
+    const inventoryCashOut = inventorySales.filter(sale => sale.tipo === "Contado").reduce((sum, sale) => sum + Number(sale.cantidad || 0), 0);
+    const inventoryCreditOut = inventorySales.filter(sale => sale.tipo === "Credito").reduce((sum, sale) => sum + Number(sale.cantidad || 0), 0);
+    const inventoryMoved = inventoryEntries - inventoryCashOut - inventoryCreditOut;
     const inventoryCurrent = state.inventario.reduce((sum, item) => sum + Number(item.stock || 0), 0);
-    return { daily, monthly, inventoryMoved, inventoryCurrent };
+    return { daily, monthly, inventoryMoved, inventoryCurrent, inventoryEntries, inventoryCashOut, inventoryCreditOut };
 }
 export function metrics(state) {
     const stock = state.inventario.reduce((sum, item) => sum + Number(item.stock || 0), 0);

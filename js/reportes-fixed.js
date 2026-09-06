@@ -6,11 +6,16 @@ function chartBars(items, valueKey, formatter, label) {
     const values = Object.values(items).slice(-12);
     if (!values.length) return '<div class="empty-state">Aún no hay registros suficientes para graficar.</div>';
     const max = Math.max(...values.map(item => Number(item[valueKey] || 0)), 1);
-    const total = values.reduce((sum, item) => sum + Number(item[valueKey] || 0), 0);
+    const total = values.reduce((sum, item) => sum + Number(item.sales || 0) + Number(item.credit || 0) + Number(item.payments || 0), 0);
+    const cashTotal = values.reduce((sum, item) => sum + Number(item.sales || 0), 0);
+    const creditTotal = values.reduce((sum, item) => sum + Number(item.credit || 0), 0);
+    const paymentsTotal = values.reduce((sum, item) => sum + Number(item.payments || 0), 0);
+    const cashEnd = total ? cashTotal / total * 100 : 0;
+    const creditEnd = total ? cashEnd + creditTotal / total * 100 : 0;
     const color = valueKey === "sales" ? "cash" : valueKey === "credit" ? "credit" : "payments";
     return `<div class="chart-visual">
         <div class="chart-list">${values.map(item => `<div class="bar-row"><span>${item.label}</span><span class="bar-track"><span class="bar-fill ${color}" style="width:${Math.max(item[valueKey] ? 5 : 0, Number(item[valueKey] || 0) / max * 100)}%"></span></span><strong>${formatter(item[valueKey])}</strong></div>`).join("")}</div>
-        <div class="donut-wrap"><div class="donut donut-${color}"><span>${formatter(total)}</span></div><div class="donut-legend"><span><i class="legend-dot ${color}"></i>${label}</span></div></div>
+        <div class="donut-wrap"><div class="donut" style="background:conic-gradient(var(--chart-cash) 0 ${cashEnd}%, var(--chart-credit) ${cashEnd}% ${creditEnd}%, var(--chart-payments) ${creditEnd}% 100%)"><span>${formatter(total)}</span></div><div class="donut-legend"><span><i class="legend-dot cash"></i>Contado ${formatter(cashTotal)}</span><span><i class="legend-dot credit"></i>Crédito ${formatter(creditTotal)}</span><span><i class="legend-dot payments"></i>Pagos ${formatter(paymentsTotal)}</span></div></div>
     </div>`;
 }
 

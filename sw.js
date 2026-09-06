@@ -1,12 +1,12 @@
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open('gestor-ventas-v3').then((cache) => cache.addAll([
+  event.waitUntil(caches.open('gestor-ventas-v4').then((cache) => cache.addAll([
     './', './index.html', './dashboard.html', './inventario.html', './ventas.html', './creditos.html', './reportes.html',
-    './css/styles.css', './social-card.jpg', './icon-192.png', './icon-512.png', './js/firebase.js', './js/auth.js', './js/app.js', './js/dashboard.js', './js/inventario.js', './js/ventas.js', './js/creditos.js', './js/reportes.js', './js/usuarios.js', './usuarios.html'
+    './css/styles.css', './social-card.jpg', './icon-192.png', './icon-512.png', './js/firebase.js', './js/auth.js', './js/app.js', './js/dashboard.js', './js/inventario.js', './js/ventas.js', './js/creditos.js', './js/reportes.js', './js/reportes-fixed.js', './js/usuarios.js', './usuarios.html'
   ])));
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== 'gestor-ventas-v3').map((key) => caches.delete(key)))));
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== 'gestor-ventas-v4').map((key) => caches.delete(key)))));
 });
 
 self.addEventListener('fetch', (e) => {

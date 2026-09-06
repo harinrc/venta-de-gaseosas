@@ -1,6 +1,6 @@
 import { setupApp, pageShell, card, metrics, money, transactionsTable, chartData, dateKey, salesForDate } from "./app.js";
 
-let selectedDate = new Date().toISOString().slice(0, 10);
+let selectedDate = dateKey();
 
 function chartBars(items, valueKey, formatter, label) {
     const values = Object.values(items).slice(-12);
